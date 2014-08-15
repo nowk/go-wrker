@@ -1,11 +1,14 @@
 package wrker
 
+import "sync"
+
 // Worker
 
 type Worker struct {
 	id   interface{}
 	Job  chan Job
-	stop chan bool
+	stop chan chan struct{}
+	sync *sync.WaitGroup
 }
 
 // NewWorker returns a new Worker
@@ -13,7 +16,7 @@ func NewWorker(id interface{}) (w *Worker) {
 	w = &Worker{
 		id:   id,
 		Job:  make(chan Job),
-		stop: make(chan bool),
+		stop: make(chan chan struct{}),
 	}
 
 	return
@@ -30,14 +33,16 @@ func (w Worker) Start(workerq chan<- chan Job, er chan<- error) {
 			workerq <- w.Job
 
 			select {
-			case <-w.stop:
+			case ch := <-w.stop:
 				close(w.Job)
+				ch <- struct{}{}
 
 				return
 			case job := <-w.Job:
 				if err := job.Do(); err != nil {
 					er <- err
 				}
+				w.sync.Done()
 			}
 		}
 	}()
@@ -45,5 +50,7 @@ func (w Worker) Start(workerq chan<- chan Job, er chan<- error) {
 
 // Stop sends stop on the worker to close the worker
 func (w *Worker) Stop() {
-	w.stop <- true
+	ch := make(chan struct{})
+	w.stop <- ch
+	<-ch
 }
