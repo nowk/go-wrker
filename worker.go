@@ -3,15 +3,17 @@ package wrker
 // Worker
 
 type Worker struct {
-	id  interface{}
-	Job chan Job
+	id   interface{}
+	Job  chan Job
+	stop chan bool
 }
 
 // NewWorker returns a new Worker
 func NewWorker(id interface{}) (w *Worker) {
 	w = &Worker{
-		id:  id,
-		Job: make(chan Job),
+		id:   id,
+		Job:  make(chan Job),
+		stop: make(chan bool),
 	}
 
 	return
@@ -28,6 +30,10 @@ func (w Worker) Start(workerq chan<- chan Job, er chan<- error) {
 			workerq <- w.Job
 
 			select {
+			case <-w.stop:
+				close(w.Job)
+
+				return
 			case job := <-w.Job:
 				if err := job.Do(); err != nil {
 					er <- err
@@ -35,4 +41,9 @@ func (w Worker) Start(workerq chan<- chan Job, er chan<- error) {
 			}
 		}
 	}()
+}
+
+// Stop sends stop on the worker to close the worker
+func (w *Worker) Stop() {
+	w.stop <- true
 }
