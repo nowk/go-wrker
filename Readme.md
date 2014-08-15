@@ -21,7 +21,7 @@ Go worker
       res := make(chan string)
 
       pool := wrker.NewPool(3)
-      errs := wrker.Dispatch(jobs, pool)
+      errs := pool.Dispatch(jobs)
 
       go func() {
         for {

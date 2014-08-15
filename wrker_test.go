@@ -27,7 +27,7 @@ func TestWrkpool(t *testing.T) {
 	jobs := make(chan Job, 10)
 
 	pool := NewPool(3)
-	errs := Dispatch(jobs, pool)
+	errs := pool.Dispatch(jobs)
 
 	res := make(chan string)
 
