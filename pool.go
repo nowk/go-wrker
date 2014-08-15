@@ -11,9 +11,14 @@ func NewPool(num int) (pool *WorkPool) {
 	pool = &WorkPool{}
 
 	for i := 0; i < num; i++ {
-		wkr := NewWorker(i)
-		pool.Workers = append(pool.Workers, wkr)
+		w := NewWorker(i)
+		pool.Add(w)
 	}
 
 	return
+}
+
+// Add adds a worker to the pool
+func (p *WorkPool) Add(worker *Worker) {
+	p.Workers = append(p.Workers, worker)
 }
