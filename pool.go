@@ -79,7 +79,8 @@ func (p *WorkPool) route(jobs chan Job) {
 	}
 }
 
-// Drain provides a graceful close of the pool
+// Drain provides a graceful close of the pool allowing any workers in the queue
+// to finish.
 func (p *WorkPool) Drain() {
 	p.sync.Wait()
 	p.Flush()
