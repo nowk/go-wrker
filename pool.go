@@ -56,6 +56,7 @@ func (p *WorkPool) route(jobs <-chan Job) {
 				w.Stop()
 			}
 			close(p.Queue)
+			close(p.Errors)
 			ch <- struct{}{}
 
 			return
