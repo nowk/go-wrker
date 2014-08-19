@@ -48,7 +48,7 @@ func (p *WorkPool) Dispatch(jobs chan Job) chan error {
 
 // route takes a channel of jobs and passes them to an available worker in the
 // queue
-func (p *WorkPool) route(jobs chan Job) {
+func (p *WorkPool) route(jobs <-chan Job) {
 	for {
 		select {
 		case ch := <-p.stop:
