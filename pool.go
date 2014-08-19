@@ -40,7 +40,7 @@ func (p *WorkPool) Dispatch(jobs chan Job) chan error {
 	for _, w := range p.Workers {
 		w.Start(p.Queue, p.Errors)
 	}
-
+	p.sync.Add(1) // count once to satisfy the WaitGroup
 	go p.route(jobs)
 
 	return p.Errors
@@ -83,6 +83,7 @@ func (p *WorkPool) route(jobs <-chan Job) {
 // Drain provides a graceful close of the pool allowing any workers in the queue
 // to finish.
 func (p *WorkPool) Drain() {
+	p.sync.Done() // decrement the initial count
 	p.sync.Wait()
 	p.Flush()
 }
